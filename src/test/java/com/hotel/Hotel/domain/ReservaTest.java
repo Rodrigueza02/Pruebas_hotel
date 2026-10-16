@@ -1,28 +1,23 @@
 package com.hotel.Hotel.domain;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import java.time.LocalDateTime;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.assertj.core.api.Assertions.*;
-
-@DisplayName("Reserva - estado inicial y cálculo de costo")
 class ReservaTest {
 
     @Test
-    @DisplayName("Reserva nueva nace en estado PENDIENTE y calcula costoTotal correctamente")
-    void reservaNuevaPendienteConCostoCorrecto() {
-        Cliente cliente = new Cliente("Isabella Mora", "isabella@hotel.com");
-        Habitacion hab  = new HabitacionEstandar("201", 2, 200.0, 1);
+    void reservaNuevaDebebEstarEnEstadoPendiente() {
+        Cliente cliente = new Cliente("Pedro Salinas", "pedro@gmail.com");
+        Habitacion hab = new HabitacionEstandar("305", 2, 150.0, 1);
 
-        LocalDateTime inicio = LocalDateTime.of(2030, 5, 10, 14, 0);
-        LocalDateTime fin    = LocalDateTime.of(2030, 5, 14, 14, 0); // 4 días exactos
-        RangoFechas periodo  = new RangoFechas(inicio, fin);
+        RangoFechas periodo = new RangoFechas(
+                LocalDateTime.of(2027, 6, 1, 14, 0),
+                LocalDateTime.of(2027, 6, 4, 14, 0)); // 3 noches
 
         Reserva reserva = new Reserva(cliente, hab, periodo);
 
-        assertThat(reserva.getEstado()).isEqualTo(EstadoReserva.PENDIENTE);
-        assertThat(reserva.getCostoTotal()).isEqualTo(800.0); // 200 * 4
+        assertEquals(EstadoReserva.PENDIENTE, reserva.getEstado());
+        assertEquals(450.0, reserva.getCostoTotal()); // 150 x 3
     }
 }

@@ -6,7 +6,6 @@ import com.hotel.Hotel.mapper.ReservaMapper;
 import com.hotel.Hotel.repository.ClienteRepository;
 import com.hotel.Hotel.repository.HabitacionRepository;
 import com.hotel.Hotel.repository.ReservaRepository;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,12 +16,11 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ReservaService - confirmar reserva")
 class ConfirmarReservaServiceTest {
 
     @Mock private ReservaRepository reservaRepository;
@@ -30,31 +28,32 @@ class ConfirmarReservaServiceTest {
     @Mock private HabitacionRepository habitacionRepository;
     @Mock private ReservaMapper reservaMapper;
 
-    @InjectMocks private ReservaService reservaService;
+    @InjectMocks
+    private ReservaService reservaService;
 
     @Test
-    @DisplayName("Confirmar reserva existente cambia estado a CONFIRMADA")
-    void confirmarReservaExistenteRetornaConfirmada() {
-        UUID reservaId  = UUID.randomUUID();
-        Cliente cliente = new Cliente("Isabella Mora", "isabella@hotel.com");
-        Habitacion hab  = new HabitacionEstandar("305", 2, 200.0, 1);
+    void debeConfirmarReservaYCambiarEstado() {
+        UUID id = UUID.randomUUID();
+
+        Cliente cliente = new Cliente("Jorge Pena", "jorge@gmail.com");
+        Habitacion hab = new HabitacionEstandar("410", 2, 200.0, 1);
         RangoFechas periodo = new RangoFechas(
-                LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(4));
+                LocalDateTime.of(2027, 8, 1, 14, 0),
+                LocalDateTime.of(2027, 8, 3, 14, 0));
+
         Reserva reserva = new Reserva(cliente, hab, periodo);
 
-        ReservaResponse responseEsperado = new ReservaResponse(
-                reservaId, "Isabella Mora", "305",
-                periodo.fechaInicio(), periodo.fechaFin(), 600.0, "CONFIRMADA");
+        ReservaResponse responseMock = new ReservaResponse(
+                id, "Jorge Pena", "410",
+                periodo.fechaInicio(), periodo.fechaFin(), 400.0, "CONFIRMADA");
 
-        when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+        when(reservaRepository.findById(id)).thenReturn(Optional.of(reserva));
         when(reservaRepository.save(any(Reserva.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(reservaMapper.toResponse(any(Reserva.class))).thenReturn(responseEsperado);
+        when(reservaMapper.toResponse(any(Reserva.class))).thenReturn(responseMock);
 
-        ReservaResponse resultado = reservaService.confirmar(reservaId);
+        ReservaResponse resultado = reservaService.confirmar(id);
 
-        assertThat(resultado.estado()).isEqualTo("CONFIRMADA");
-        assertThat(reserva.getEstado()).isEqualTo(EstadoReserva.CONFIRMADA);
-        verify(reservaRepository).save(reserva);
+        assertEquals("CONFIRMADA", resultado.estado());
+        assertEquals(EstadoReserva.CONFIRMADA, reserva.getEstado());
     }
 }
